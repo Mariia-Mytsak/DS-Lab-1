@@ -3,8 +3,18 @@ import sys
 import os
 from typing import Dict, List, Union, TextIO
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from utils import load_json
+
+_CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+_PARENT_DIR = os.path.dirname(_CURRENT_DIR)
+if _CURRENT_DIR not in sys.path:
+    sys.path.insert(0, _CURRENT_DIR)
+if _PARENT_DIR not in sys.path:
+    sys.path.insert(0, _PARENT_DIR)
+
+try:
+    import utils
+except ImportError:
+    from src import utils
 
 
 def summarize_weather_data(data: List[Dict[str, any]]) -> Dict[str, float]:

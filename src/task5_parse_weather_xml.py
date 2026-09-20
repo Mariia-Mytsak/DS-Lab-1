@@ -3,8 +3,17 @@ import sys
 import xml.etree.ElementTree as ET
 from typing import Dict, List, Any
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from utils import save_to_csv
+_CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+_PARENT_DIR = os.path.dirname(_CURRENT_DIR)
+if _CURRENT_DIR not in sys.path:
+    sys.path.insert(0, _CURRENT_DIR)
+if _PARENT_DIR not in sys.path:
+    sys.path.insert(0, _PARENT_DIR)
+
+try:
+    import utils
+except ImportError:
+    from src import utils
 
 
 def parse_weather_xml(xml_file: str) -> List[Dict[str, any]]:

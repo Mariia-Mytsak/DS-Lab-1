@@ -4,9 +4,18 @@ from typing import Dict
 
 import sys
 import os
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from utils import save_to_json, load_json
+_CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+_PARENT_DIR = os.path.dirname(_CURRENT_DIR)
+if _CURRENT_DIR not in sys.path:
+    sys.path.insert(0, _CURRENT_DIR)
+if _PARENT_DIR not in sys.path:
+    sys.path.insert(0, _PARENT_DIR)
+
+try:
+    from utils import save_to_json, load_json
+except ImportError:
+    from src.utils import save_to_json, load_json
 
 
 def fetch_wikipedia_page(url: str) -> str:
