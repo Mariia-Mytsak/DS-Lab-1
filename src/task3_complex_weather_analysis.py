@@ -7,46 +7,83 @@ except ImportError:
 
 
 def analyze_daily_weather(day: Dict[str, Any], temp_threshold: float = 30, 
-                          wind_threshold: float = 15, humidity_threshold: float = 70) -> Dict[str, Any]:
+                           wind_threshold: float = 15, humidity_threshold: float = 70) -> Dict[str, Any]:
     """
     Analyze weather data for a single day.
-
-    Args:
-        day (dict): The weather data for the day.
-        temp_threshold (float): The temperature threshold to determine a hot day.
-        wind_threshold (float): The wind speed threshold to determine a windy day.
-        humidity_threshold (float): The humidity threshold to determine uncomfortable weather.
-
-    Returns:
-        dict: A dictionary with analysis results for the day.
     """
-    pass
+    date = day.get("date", "")
+    hourly = day.get("hourly", {})
+    
+    temps = hourly.get("temperature", [])
+    winds = hourly.get("wind_speed", [])
+    humidities = hourly.get("humidity", [])
+
+    avg_temp = sum(temps) / len(temps) if temps else 0.0
+    max_temp = max(temps) if temps else 0.0
+    avg_wind = sum(winds) / len(winds) if winds else 0.0
+    avg_humidity = sum(humidities) / len(humidities) if humidities else 0.0
+
+    is_hot = max_temp > temp_threshold
+    is_windy = avg_wind > wind_threshold
+    is_uncomfortable = avg_temp > temp_threshold and avg_humidity > humidity_threshold
+
+    return {
+        "date": date,
+        "avg_temp": avg_temp,
+        "max_temp": max_temp,
+        "avg_wind": avg_wind,
+        "avg_humidity": avg_humidity,
+        "is_hot": is_hot,
+        "is_windy": is_windy,
+        "is_uncomfortable": is_uncomfortable
+    }
 
 
 def generate_daily_report(analysis: Dict[str, Any]) -> str:
     """
     Generate a detailed report based on the analysis results for a single day.
-
-    Args:
-        analysis (dict): The analysis results for the day.
-
-    Returns:
-        str: A detailed report as a string.
     """
-    pass
+    date = analysis.get("date", "Unknown")
+    avg_temp = analysis.get("avg_temp", 0.0)
+    max_temp = analysis.get("max_temp", 0.0)
+    avg_wind = analysis.get("avg_wind", 0.0)
+    avg_humidity = analysis.get("avg_humidity", 0.0)
+
+    report = (
+        f"Date: {date}\n"
+        f"Average Temperature: {avg_temp:.2f}°C\n"
+        f"Max Temperature: {max_temp:.2f}°C\n"
+        f"Average Wind Speed: {avg_wind:.2f} km/h\n"
+        f"Average Humidity: {avg_humidity:.2f}%\n"
+        f"Hot Day: {'Yes' if analysis.get('is_hot') else 'No'}\n"
+        f"Windy Day: {'Yes' if analysis.get('is_windy') else 'No'}\n"
+        f"Uncomfortable Day: {'Yes' if analysis.get('is_uncomfortable') else 'No'}"
+    )
+    return report
 
 
 def summarize_weather_analysis(analyses: List[Dict[str, Any]]) -> str:
     """
     Summarize the weather analysis over multiple days.
-
-    Args:
-        analyses (list of dict): A list of daily analysis results.
-
-    Returns:
-        str: A summary report as a string.
     """
-    pass
+    total_days = len(analyses)
+    if total_days == 0:
+        return "No weather data available."
+
+    hot_days = sum(1 for a in analyses if a.get("is_hot"))
+    windy_days = sum(1 for a in analyses if a.get("is_windy"))
+    uncomfortable_days = sum(1 for a in analyses if a.get("is_uncomfortable"))
+    max_temp_overall = max((a.get("max_temp", 0.0) for a in analyses), default=0.0)
+
+    summary = (
+        f"Weather Analysis Summary:\n"
+        f"Total Days Analyzed: {total_days}\n"
+        f"Hot Days: {hot_days}\n"
+        f"Windy Days: {windy_days}\n"
+        f"Uncomfortable Days: {uncomfortable_days}\n"
+        f"Highest Recorded Temperature: {max_temp_overall:.2f}°C"
+    )
+    return summary
 
 
 if __name__ == "__main__":
