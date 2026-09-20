@@ -1,7 +1,10 @@
-import csv
+import os
+import sys
 import re
-from typing import List, Dict
+from typing import Dict, List, Any
 
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from utils import save_to_csv
 
 def clean_text(line: str) -> str:
     """

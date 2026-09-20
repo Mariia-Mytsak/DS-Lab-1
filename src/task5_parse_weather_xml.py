@@ -1,6 +1,10 @@
+import os
+import sys
 import xml.etree.ElementTree as ET
-import csv
-from typing import List, Dict
+from typing import Dict, List, Any
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from utils import save_to_csv
 
 
 def parse_weather_xml(xml_file: str) -> List[Dict[str, any]]:
