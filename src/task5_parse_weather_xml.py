@@ -17,7 +17,40 @@ def parse_weather_xml(xml_file: str) -> List[Dict[str, any]]:
         FileNotFoundError: If the XML file does not exist.
         ET.ParseError: If the XML file is malformed.
     """
-    pass
+    tree = ET.parse(xml_file)
+    root = tree.getroot()
+
+    parsed_data = []
+
+    # Проходимо по кожному елементу дня/запису в XML
+    for day in root.findall(".//day") or root.findall(".//city") or root:
+        # Перевіряємо, чи є підтеги дня, якщо це список днів
+        day_data = {}
+        for child in day:
+            tag = child.tag
+            text = child.text.strip() if child.text else ""
+            
+            # Конвертуємо числові значення за наявності
+            try:
+                if "." in text:
+                    value = float(text)
+                else:
+                    value = int(text)
+            except ValueError:
+                value = text
+                
+            day_data[tag] = value
+            
+        if day_data:
+            parsed_data.append(day_data)
+
+    # Якщо структура XML інша (наприклад, суцільні атрибути чи тег forecast)
+    if not parsed_data:
+        for item in root.iter():
+            if item.attrib:
+                parsed_data.append(item.attrib)
+
+    return parsed_data
 
 
 def save_to_csv(data: List[Dict[str, any]], filename: str = "parsed_weather_data.csv") -> None:
@@ -31,7 +64,17 @@ def save_to_csv(data: List[Dict[str, any]], filename: str = "parsed_weather_data
     Raises:
         IOError: If there is an error writing to the file.
     """
-    pass
+    if not data:
+        return
+
+    # Визначаємо всі можливі ключі для заголовків CSV
+    fieldnames = list(data[0].keys())
+
+    with open(filename, mode="w", newline="", encoding="utf-8") as csv_file:
+        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+        writer.writeheader()
+        for row in data:
+            writer.writerow(row)
 
 
 if __name__ == "__main__":
