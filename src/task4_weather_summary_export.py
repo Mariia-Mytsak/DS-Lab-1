@@ -1,10 +1,10 @@
 import csv
+import sys
+import os
 from typing import Dict, List, Union, TextIO
 
-try:
-    from .utils import load_json
-except ImportError:
-    from utils import load_json
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from utils import load_json
 
 
 def summarize_weather_data(data: List[Dict[str, any]]) -> Dict[str, float]:

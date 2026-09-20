@@ -1,10 +1,10 @@
 import requests
+import sys
+import os
 from typing import Dict
 
-try:
-    from .utils import save_to_json
-except ImportError:
-    from utils import save_to_json
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from utils import save_to_json
 
 
 def fetch_weather_data() -> Dict[str, any]:

@@ -2,10 +2,11 @@ import requests
 from bs4 import BeautifulSoup
 from typing import Dict
 
-try:
-    from .utils import save_to_json
-except ImportError:
-    from utils import save_to_json
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+from utils import save_to_json, load_json
 
 
 def fetch_wikipedia_page(url: str) -> str:

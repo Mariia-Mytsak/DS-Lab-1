@@ -1,9 +1,9 @@
+import sys
+import os
 from typing import Dict, List, Any
 
-try:
-    from .utils import load_json
-except ImportError:
-    from utils import load_json
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from utils import load_json
 
 
 def analyze_daily_weather(day: Dict[str, Any], temp_threshold: float = 30, 
