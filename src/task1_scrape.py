@@ -11,44 +11,43 @@ except ImportError:
 def fetch_wikipedia_page(url: str) -> str:
     """
     Fetch the HTML content of the given Wikipedia page.
-
-    Args:
-        url (str): The URL of the Wikipedia page to fetch.
-
-    Returns:
-        str: The HTML content of the page as a string.
-
-    Raises:
-        requests.HTTPError: If the HTTP request returned an unsuccessful status code.
-        requests.RequestException: If there was a network error.
     """
-    pass
+    response = requests.get(url)
+    response.raise_for_status()
+    return response.text
 
 
 def extract_title(soup: BeautifulSoup) -> str:
     """
     Extract the title of the Wikipedia page.
-
-    Args:
-        soup (BeautifulSoup): A BeautifulSoup object representing the parsed HTML.
-
-    Returns:
-        str: The title of the page.
     """
-    pass
+    title_element = soup.find(id="firstHeading")
+    if title_element:
+        return title_element.get_text(strip=True)
+    
+    if soup.title:
+        return soup.title.get_text(strip=True)
+        
+    return ""
 
 
 def extract_first_sentence(soup: BeautifulSoup) -> str:
     """
     Extract the first sentence of the first paragraph on the Wikipedia page.
-
-    Args:
-        soup (BeautifulSoup): A BeautifulSoup object representing the parsed HTML.
-
-    Returns:
-        str: The first sentence of the first paragraph.
     """
-    pass
+    # Знаходимо всі параграфи в основному вмісті статті
+    paragraphs = soup.select("p")
+    
+    for p in paragraphs:
+        text = p.get_text(strip=True)
+        # Пропускаємо порожні параграфи
+        if text:
+            # Розділяємо параграф на речення по першій крапці
+            sentences = text.split('.')
+            if sentences:
+                return sentences[0].strip() + '.'
+                
+    return ""
 
 
 if __name__ == "__main__":
