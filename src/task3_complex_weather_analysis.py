@@ -1,20 +1,18 @@
 import sys
 import os
-from typing import Dict, List, Any
-
+from typing import Dict, Any, List
 
 _CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 _PARENT_DIR = os.path.dirname(_CURRENT_DIR)
-if _CURRENT_DIR not in sys.path:
-    sys.path.insert(0, _CURRENT_DIR)
 if _PARENT_DIR not in sys.path:
     sys.path.insert(0, _PARENT_DIR)
+if _CURRENT_DIR not in sys.path:
+    sys.path.insert(0, _CURRENT_DIR)
 
 try:
-    import utils
-except ImportError:
     from src import utils
-
+except ImportError:
+    import utils
 
 def analyze_daily_weather(day: Dict[str, Any], temp_threshold: float = 30, 
                            wind_threshold: float = 15, humidity_threshold: float = 70) -> Dict[str, Any]:

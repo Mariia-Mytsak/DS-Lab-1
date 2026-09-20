@@ -1,22 +1,22 @@
-import os
 import sys
+import os
 import xml.etree.ElementTree as ET
 from typing import Dict, List, Any
 
 _CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 _PARENT_DIR = os.path.dirname(_CURRENT_DIR)
-if _CURRENT_DIR not in sys.path:
-    sys.path.insert(0, _CURRENT_DIR)
 if _PARENT_DIR not in sys.path:
     sys.path.insert(0, _PARENT_DIR)
+if _CURRENT_DIR not in sys.path:
+    sys.path.insert(0, _CURRENT_DIR)
 
 try:
-    import utils
-except ImportError:
     from src import utils
+except ImportError:
+    import utils
 
 
-def parse_weather_xml(xml_file: str) -> List[Dict[str, any]]:
+def parse_weather_xml(xml_file: str) -> List[Dict[str, Any]]:
     """
     Parse weather data from an XML file.
 

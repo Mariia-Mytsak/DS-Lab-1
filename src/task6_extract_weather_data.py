@@ -1,20 +1,18 @@
-import os
 import sys
-import re
+import os
 from typing import Dict, List, Any
-
 
 _CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 _PARENT_DIR = os.path.dirname(_CURRENT_DIR)
-if _CURRENT_DIR not in sys.path:
-    sys.path.insert(0, _CURRENT_DIR)
 if _PARENT_DIR not in sys.path:
     sys.path.insert(0, _PARENT_DIR)
+if _CURRENT_DIR not in sys.path:
+    sys.path.insert(0, _CURRENT_DIR)
 
 try:
-    import utils
-except ImportError:
     from src import utils
+except ImportError:
+    import utils
 
 def clean_text(line: str) -> str:
     """
@@ -32,7 +30,7 @@ def clean_text(line: str) -> str:
     return cleaned
 
 
-def extract_weather_data(text_file: str) -> List[Dict[str, any]]:
+def extract_weather_data(text_file: str) -> List[Dict[str, Any]]:
     """
     Extract weather data from a text file using regular expressions.
 
