@@ -13,8 +13,10 @@ def clean_text(line: str) -> str:
     Returns:
         str: The cleaned line of text.
     """
-    # Replace non-breaking spaces and other non-ASCII characters
-    pass
+    # Видаляємо не-ASCII символи та замінюємо нерозривні пробіли
+    cleaned = line.encode("ascii", "ignore").decode("ascii")
+    cleaned = cleaned.replace("\xa0", " ").strip()
+    return cleaned
 
 
 def extract_weather_data(text_file: str) -> List[Dict[str, any]]:
@@ -30,7 +32,48 @@ def extract_weather_data(text_file: str) -> List[Dict[str, any]]:
     Raises:
         FileNotFoundError: If the text file does not exist.
     """
-    pass
+    extracted_data = []
+
+    # Шаблони для витягування полів
+    date_pattern = re.compile(r"Date:\s*([\d{4}-\d{2}-\d{2}\w\s,]+|\d{4}-\d{2}-\d{2})", re.IGNORECASE)
+    max_temp_pattern = re.compile(r"Max\s*Temp(?:erature)?:\s*(-?\d+(?:\.\d+)?)", re.IGNORECASE)
+    min_temp_pattern = re.compile(r"Min\s*Temp(?:erature)?:\s*(-?\d+(?:\.\d+)?)", re.IGNORECASE)
+    humidity_pattern = re.compile(r"Humidity:\s*(\d+(?:\.\d+)?)", re.IGNORECASE)
+    precipitation_pattern = re.compile(r"Precipitation:\s*(\d+(?:\.\d+)?)", re.IGNORECASE)
+
+    with open(text_file, "r", encoding="utf-8", errors="ignore") as f:
+        content = f.read()
+
+    # Розбиваємо вміст на блоки за датами або розділювачами
+    blocks = re.split(r"(?=Date:)", content, flags=re.IGNORECASE)
+
+    for block in blocks:
+        block_clean = clean_text(block)
+        if not block_clean:
+            continue
+
+        date_match = date_pattern.search(block_clean)
+        max_temp_match = max_temp_pattern.search(block_clean)
+        min_temp_match = min_temp_pattern.search(block_clean)
+        humidity_match = humidity_pattern.search(block_clean)
+        precip_match = precipitation_pattern.search(block_clean)
+
+        if date_match:
+            date_val = date_match.group(1).strip()
+            max_temp_val = float(max_temp_match.group(1)) if max_temp_match else 0.0
+            min_temp_val = float(min_temp_match.group(1)) if min_temp_match else 0.0
+            humidity_val = float(humidity_match.group(1)) if humidity_match else 0.0
+            precip_val = float(precip_match.group(1)) if precip_match else 0.0
+
+            extracted_data.append({
+                "Date": date_val,
+                "Max Temperature": max_temp_val,
+                "Min Temperature": min_temp_val,
+                "Humidity": humidity_val,
+                "Precipitation": precip_val
+            })
+
+    return extracted_data
 
 
 def save_to_csv(data: List[Dict[str, any]], filename: str = "extracted_weather_data.csv") -> None:
@@ -45,7 +88,12 @@ def save_to_csv(data: List[Dict[str, any]], filename: str = "extracted_weather_d
         IOError: If there is an error writing to the file.
     """
     headers = ["Date", "Max Temperature", "Min Temperature", "Humidity", "Precipitation"]
-    pass
+
+    with open(filename, mode="w", newline="", encoding="utf-8") as csv_file:
+        writer = csv.DictWriter(csv_file, fieldnames=headers)
+        writer.writeheader()
+        for row in data:
+            writer.writerow(row)
 
 
 if __name__ == "__main__":
