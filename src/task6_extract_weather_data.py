@@ -1,6 +1,8 @@
-import sys
+import csv
 import os
-from typing import Dict, List, Any
+import re
+import sys
+from typing import Any, Dict, List
 
 _CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 _PARENT_DIR = os.path.dirname(_CURRENT_DIR)
@@ -14,6 +16,7 @@ try:
 except ImportError:
     import utils
 
+
 def clean_text(line: str) -> str:
     """
     Clean the text line by removing non-ASCII characters and fixing known issues.
@@ -24,7 +27,6 @@ def clean_text(line: str) -> str:
     Returns:
         str: The cleaned line of text.
     """
-    # Видаляємо не-ASCII символи та замінюємо нерозривні пробіли
     cleaned = line.encode("ascii", "ignore").decode("ascii")
     cleaned = cleaned.replace("\xa0", " ").strip()
     return cleaned
@@ -45,8 +47,8 @@ def extract_weather_data(text_file: str) -> List[Dict[str, Any]]:
     """
     extracted_data = []
 
-    # Шаблони для витягування полів
-    date_pattern = re.compile(r"Date:\s*([\d{4}-\d{2}-\d{2}\w\s,]+|\d{4}-\d{2}-\d{2})", re.IGNORECASE)
+    # Точний регулярний вираз для дати YYYY-MM-DD
+    date_pattern = re.compile(r"Date:\s*(\d{4}-\d{2}-\d{2})", re.IGNORECASE)
     max_temp_pattern = re.compile(r"Max\s*Temp(?:erature)?:\s*(-?\d+(?:\.\d+)?)", re.IGNORECASE)
     min_temp_pattern = re.compile(r"Min\s*Temp(?:erature)?:\s*(-?\d+(?:\.\d+)?)", re.IGNORECASE)
     humidity_pattern = re.compile(r"Humidity:\s*(\d+(?:\.\d+)?)", re.IGNORECASE)
@@ -55,7 +57,6 @@ def extract_weather_data(text_file: str) -> List[Dict[str, Any]]:
     with open(text_file, "r", encoding="utf-8", errors="ignore") as f:
         content = f.read()
 
-    # Розбиваємо вміст на блоки за датами або розділювачами
     blocks = re.split(r"(?=Date:)", content, flags=re.IGNORECASE)
 
     for block in blocks:
@@ -77,17 +78,17 @@ def extract_weather_data(text_file: str) -> List[Dict[str, Any]]:
             precip_val = float(precip_match.group(1)) if precip_match else 0.0
 
             extracted_data.append({
-                "Date": date_val,
-                "Max Temperature": max_temp_val,
-                "Min Temperature": min_temp_val,
-                "Humidity": humidity_val,
-                "Precipitation": precip_val
+                "date": date_val,
+                "max_temperature": max_temp_val,
+                "min_temperature": min_temp_val,
+                "humidity": humidity_val,
+                "precipitation": precip_val
             })
 
     return extracted_data
 
 
-def save_to_csv(data: List[Dict[str, any]], filename: str = "extracted_weather_data.csv") -> None:
+def save_to_csv(data: List[Dict[str, Any]], filename: str = "extracted_weather_data.csv") -> None:
     """
     Save extracted weather data to a CSV file.
 
@@ -98,26 +99,35 @@ def save_to_csv(data: List[Dict[str, any]], filename: str = "extracted_weather_d
     Raises:
         IOError: If there is an error writing to the file.
     """
-    headers = ["Date", "Max Temperature", "Min Temperature", "Humidity", "Precipitation"]
+    if not data:
+        return
+
+    header_map = {
+        "date": "Date",
+        "max_temperature": "Max Temperature",
+        "min_temperature": "Min Temperature",
+        "humidity": "Humidity",
+        "precipitation": "Precipitation"
+    }
+
+    raw_keys = list(data[0].keys())
+    fieldnames = [header_map.get(k, k) for k in raw_keys]
 
     with open(filename, mode="w", newline="", encoding="utf-8") as csv_file:
-        writer = csv.DictWriter(csv_file, fieldnames=headers)
+        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
         writer.writeheader()
         for row in data:
-            writer.writerow(row)
+            formatted_row = {header_map.get(k, k): v for k, v in row.items()}
+            writer.writerow(formatted_row)
 
 
 if __name__ == "__main__":
     try:
-        # Extract data from the text file
-        import os
-        # Get the directory where this script is located
         script_dir = os.path.dirname(os.path.abspath(__file__))
         txt_path = os.path.join(script_dir, "weather_report.txt")
-        weather_data = extract_weather_data(txt_path)
-
-        # Save the extracted data to a CSV file
-        save_to_csv(weather_data)
-        print("Data has been successfully extracted and saved to extracted_weather_data.csv.")
+        if os.path.exists(txt_path):
+            weather_data = extract_weather_data(txt_path)
+            save_to_csv(weather_data)
+            print("Data has been successfully extracted and saved to extracted_weather_data.csv.")
     except Exception as e:
         print(f"An error occurred: {e}")

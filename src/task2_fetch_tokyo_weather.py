@@ -1,6 +1,7 @@
 import requests
 import sys
 import os
+from typing import Dict, Any
 
 _CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 _PARENT_DIR = os.path.dirname(_CURRENT_DIR)
@@ -14,7 +15,7 @@ try:
 except ImportError:
     from utils import save_to_json, load_json
 
-def fetch_weather_data() -> Dict[str, any]:
+def fetch_weather_data() -> Dict[str, Any]:
     """
     Fetch the maximum temperature forecast for Tokyo using the Open-Meteo API.
 
@@ -33,13 +34,13 @@ def fetch_weather_data() -> Dict[str, any]:
     response.raise_for_status()
     data = response.json()
 
-    # Отримуємо масиви дат та температур з відповіді API
-    dates = data["daily"]["time"]
-    max_temperatures = data["daily"]["temperature_2m_max"]
+    # Отримуємо перший день з відповіді API
+    date = data["daily"]["time"][0]
+    max_temperature = data["daily"]["temperature_2m_max"][0]
 
     return {
-        "date": dates,
-        "max_temperature": max_temperatures
+        "date": date,
+        "max_temperature": max_temperature
     }
 
 

@@ -1,5 +1,6 @@
 import sys
 import os
+import re
 import requests
 from bs4 import BeautifulSoup
 from typing import Dict
@@ -21,7 +22,10 @@ def fetch_wikipedia_page(url: str) -> str:
     """
     Fetch the HTML content of the given Wikipedia page.
     """
-    response = requests.get(url)
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    }
+    response = requests.get(url, headers=headers)
     response.raise_for_status()
     return response.text
 
@@ -44,17 +48,23 @@ def extract_first_sentence(soup: BeautifulSoup) -> str:
     """
     Extract the first sentence of the first paragraph on the Wikipedia page.
     """
-    # Знаходимо всі параграфи в основному вмісті статті
-    paragraphs = soup.select("p")
+    content = soup.find(id="mw-content-text") or soup
+    paragraphs = content.find_all("p")
     
     for p in paragraphs:
-        text = p.get_text(strip=True)
-        # Пропускаємо порожні параграфи
-        if text:
-            # Розділяємо параграф на речення по першій крапці
-            sentences = text.split('.')
+        # separator=' ' гарантує, що слова з тегів <a> не злипнуться
+        text = p.get_text(separator=' ', strip=True)
+        # Очищаємо зайві пробіли
+        text = ' '.join(text.split())
+        
+        if text and len(text) > 20:
+            # Видаляємо номери посилань [1], [2] тощо
+            clean_text = re.sub(r'\[\d+\]', '', text)
+            
+            # Розділяємо на речення по розділових знаках кінця речення
+            sentences = re.split(r'(?<=[.!?])\s+', clean_text)
             if sentences:
-                return sentences[0].strip() + '.'
+                return sentences[0].strip()
                 
     return ""
 
